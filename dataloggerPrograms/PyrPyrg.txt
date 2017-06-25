@@ -1,0 +1,71 @@
+'for KPort, aka Rainer, with love from DK
+'Pyranometer Y.E.S.---------------------------
+'Ser No. 0005-1
+Public pyr
+Units pyr = Wm-2  wa
+
+'pyrgeometer Epply PIR Ser No. 32905FB
+  Public Ld_thmp, Ld
+  Public Inst, Dome
+  Public Rdome, Rinst
+  Public Rinstln, Rdomeln
+  Public Ld_Tinst, Ld_Tdome
+  Const c1=0.0010295
+  Const c2=0.0002391
+  Const c3=1.568e-07
+  Const sigma=5.67e-08
+  Units Ld_thmp=mV
+  Units Inst=mV/mV
+  Units Dome=mV/mV
+  Units Ld_Tdome=degC
+  Units Ld_Tinst=degC
+
+DataTable (KPortData,1,-1) 
+Data Table
+	DataInterval (0,5,min,10)
+	Minimum (1,batt_volt,FP2,0,False)
+	Sample (1,PTemp,FP2)
+	 'Pyranometer Y.E.S. Ser No. 0005-1---------------------------
+	  Average(1,pyr,FP2,False)
+	  
+	 'pyrgeometer Epply PIR Ser No. 32905FB
+	Average(1,Ld_thmp,FP2,False)
+	Average(1,Ld_Tinst,FP2,False)
+	Average(1,Ld_Tdome,FP2,False)
+	Average (1,Ld,FP2,False)
+	Average (1,Ldcorr,FP2,False)
+EndTable
+
+BeginProg
+ Scan (1,Sec,3,0)
+ 
+ 
+   'Pyranometer Y.E.S.---------------------------
+  'Ser No. 0005-1
+      Dim CF
+      CF=1/0.032  
+      VoltDiff (pyr,1,mV200,14,True ,0,_60Hz,CF,0)
+	  
+	'pyrgeometer Epply PIR Ser No. 32905FB
+   'Generic Differential Voltage measurements Ld_thmp
+      VoltDiff(Ld_thmp,1,AutoRange,11,True,0,_60Hz,257.7,0)
+   'Generic Half Bridge measurements Inst
+      BrHalf(Inst,1,AutoRange,17,Vx2,1,350,True,3000,_60Hz,1,0)
+   'Generic Half Bridge measurements Dome
+      BrHalf(Dome,1,AutoRange,18,Vx2,1,350,True,3000,_60Hz,1,0)
+      Rinst = 10000*(Inst/(1-Inst))
+      Rdome = 10000*(Dome/(1-Dome))
+      Rinstln = LN(Rinst)
+      Rdomeln = LN(Rdome)
+      Ld_Tinst = 1/(c1 + c2*Rinstln +c3*(Rinstln)^3)
+      Ld_Tdome = 1/(c1 + c2*Rdomeln +c3*(Rdomeln)^3)
+      Ld= Ld_thmp + sigma*Ld_Tinst^4
+      Ld_Tinst = Ld_Tinst-273.15
+      Ld_Tdome = Ld_Tdome-273.15
+	  Ldcorr=Ld+0.0000000567*(Ld_thmp+273.15)^4-4*0.0000000567*((Ld_Tdome+273.15)^4-(Ld_Tinst+273.15)^4)
+
+  CallTable (KPortData)
+  
+  NextScan
+
+EndProg
