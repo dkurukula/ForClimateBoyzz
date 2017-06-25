@@ -62,7 +62,7 @@ BeginProg
       Ld= Ld_thmp + sigma*Ld_Tinst^4
       Ld_Tinst = Ld_Tinst-273.15
       Ld_Tdome = Ld_Tdome-273.15
-	  Ldcorr=Ld+0.0000000567*(Ld_thmp+273.15)^4-4*0.0000000567*((Ld_Tdome+273.15)^4-(Ld_Tinst+273.15)^4)
+	  Ldcorr=Ld+sigma*(Ld_thmp+273.15)^4-4*sigma*((Ld_Tdome+273.15)^4-(Ld_Tinst+273.15)^4)
 
   CallTable (KPortData)
   
